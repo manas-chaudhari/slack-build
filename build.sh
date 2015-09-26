@@ -64,7 +64,6 @@ cd $root_path
 
 # Queue background task for building, uploading, cleanup
 build_cmd="cd $sandbox_repo_path && sh $root_path/build-upload.sh $token $channel $build_id && cd $root_path"
-echo $build_cmd
 # TODO: cleanup_cmd="rm -rf $build_sandbox_path"
 eval "($build_cmd) < /dev/null &> /dev/null & disown"
 
