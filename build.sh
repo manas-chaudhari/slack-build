@@ -64,8 +64,17 @@ cd $root_path
 
 # Queue background task for building, uploading, cleanup
 build_cmd="cd $sandbox_repo_path && sh $root_path/build-upload.sh $token $channel $build_id && cd $root_path"
+
+# Disown background approach
+# build_cmd="($build_cmd) < /dev/null &> /dev/null & disown"
+
+# Tmux background approach
+session="slackbuild"
+tmux new-window -t $session
+tmux rename-window -t $session $build_id
+build_cmd="tmux send-keys -t $session \"$build_cmd\" ENTER"
 # TODO: cleanup_cmd="rm -rf $build_sandbox_path"
-eval "($build_cmd) < /dev/null &> /dev/null & disown"
+eval "$build_cmd"
 
 echo "Build id: $build_id"
 exit 0
