@@ -9,14 +9,15 @@ uploadFile() {
   if [[ ! -z "$2" ]]; then
     comment_cmd=" -F initial_comment=\"$2\""
   fi
-  upload_cmd="curl -F file=@$1 $comment_cmd -F channels=$channel -F token=$token https://slack.com/api/files.upload"
+  upload_cmd="curl -F file=@\"$1\" $comment_cmd -F channels=$channel -F token=$token https://slack.com/api/files.upload"
   eval $upload_cmd
 }
 
 # Build Command should place artifacts in `artifacts` directory
 rm -rf artifacts
 rm -rf build_log
-sh scripts/build.sh > build_log
+git submodule update --init --recursive
+./scripts/build.sh > build_log 2>&1
 build_status=$?
 artifact=`ls -1 artifacts | head -n 1`
 

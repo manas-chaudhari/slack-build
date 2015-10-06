@@ -28,7 +28,7 @@ fi
 repo_name="tinyowl-$platform"
 repo_url="git@github.com:Flutterbee/$repo_name.git"
 
-workspace_path="workspace"
+workspace_path="$root_path/workspace"
 repo_path="$workspace_path/repo/$repo_name"
 
 # Clone repository
@@ -58,7 +58,7 @@ sandbox_repo_path="$build_sandbox_path/$repo_name"
 cd $sandbox_repo_path
 # Configure Repo
 # TODO: Checkout particular tag/version
-sh "scripts/configure.sh" $platform_args
+"./scripts/configure.sh" $platform_args
 exitIfError "Configuration failed"
 cd $root_path
 
