@@ -17,7 +17,7 @@ uploadFile() {
 rm -rf artifacts
 rm -rf build_log
 git submodule update --init --recursive
-./scripts/build.sh > build_log 2>&1
+(./scripts/build.sh 2>&1) | tee build_log
 build_status=$?
 artifact=`ls -1 artifacts | head -n 1`
 
