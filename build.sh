@@ -15,11 +15,12 @@ fi
 
 channel=$1
 platform=$2
-platform_args=(${@:3})
+commit=$3
+platform_args=(${@:4})
 root_path=`pwd`
 
-if [ -z "$platform" ] || [ -z "$channel" ] || ! [[ "$platform" =~ ^(ios|android)$ ]]; then
-  echo "Expected: <slack channel> <platform=ios|android> <platform args>"
+if [ -z "$platform" ] || [ -z "$channel" ] || ! [[ "$platform" =~ ^(ios|android)$ ]] || [[ -z "$commit" ]]; then
+  echo "Expected: <slack channel> <platform=ios|android> <commit/branch/tag> <platform args>"
   echo "Received: $@"
   exit 1
 fi
@@ -37,8 +38,25 @@ if [[ ! -d "$repo_path" ]]; then
   exitIfError "Repository cloning failed"
 fi
 
+# Copy repo to sandbox
+build_id=`uuidgen`
+build_sandbox_path="$workspace_path/sandbox/$build_id"
+mkdir -p $build_sandbox_path
+cp -r $repo_path $build_sandbox_path
+sandbox_repo_path="$build_sandbox_path/$repo_name"
+
+cd $sandbox_repo_path
+
+# Checkout the particular commit
+# Fetch if commit isn't found
+if [[ `git cat-file -t $commit` != "commit" ]]; then
+  git fetch
+fi
+git checkout $commit
+exitIfError "Could not checkout $commit"
+
 # Check platform parameters
-check_script="$repo_path/scripts/configure-checkargs.sh"
+check_script="$sandbox_repo_path/scripts/configure-checkargs.sh"
 if [[ ! -f "$check_script" ]]; then
   echo "Build scripts haven't been setup in the repository"
   exit 1
@@ -47,15 +65,6 @@ fi
 sh "$check_script" $platform_args
 exitIfError "Platform args don't match"
 
-# Copy repo to sandbox
-build_id=`uuidgen`
-build_sandbox_path="$workspace_path/sandbox/$build_id"
-mkdir -p $build_sandbox_path
-cp -r $repo_path $build_sandbox_path
-sandbox_repo_path="$build_sandbox_path/$repo_name"
-
-
-cd $sandbox_repo_path
 # Configure Repo
 # TODO: Checkout particular tag/version
 "./scripts/configure.sh" $platform_args
